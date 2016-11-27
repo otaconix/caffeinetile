@@ -35,6 +35,11 @@ public class CaffeineTileService extends TileService {
     }
 
     @Override
+    public void onTileRemoved() {
+        wakeLock.release();
+    }
+
+    @Override
     public void onDestroy() {
         Log.i(LOG_TAG, "TileService destroyed");
         screenOffReceiver.destroy();
