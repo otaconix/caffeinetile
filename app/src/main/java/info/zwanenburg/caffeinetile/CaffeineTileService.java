@@ -15,6 +15,8 @@ public class CaffeineTileService extends TileService {
     private Tile tile;
     private PowerManager.WakeLock wakeLock;
     private ScreenOffReceiver screenOffReceiver = new ScreenOffReceiver();
+    private Icon activatedIcon;
+    private Icon deactivatedIcon;
 
     @Override
     public void onCreate() {
@@ -24,6 +26,12 @@ public class CaffeineTileService extends TileService {
         wakeLock = getApplicationContext().getSystemService(PowerManager.class).newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "Caffeine");
         wakeLock.setReferenceCounted(false);
         screenOffReceiver.init();
+        loadIcons();
+    }
+
+    private void loadIcons() {
+        activatedIcon = Icon.createWithResource(getApplicationContext(), R.drawable.ic_coffee_on);
+        deactivatedIcon = Icon.createWithResource(getApplicationContext(), R.drawable.ic_coffee_off);
     }
 
     @Override
@@ -44,11 +52,11 @@ public class CaffeineTileService extends TileService {
 
         if (wakeLock.isHeld()) {
             Log.i(LOG_TAG, "Caffeine is active, updating tile accordingly");
-            tile.setIcon(Icon.createWithResource(getApplicationContext(), R.drawable.ic_coffee_on));
+            tile.setIcon(activatedIcon);
             tile.setState(Tile.STATE_ACTIVE);
         } else {
             Log.i(LOG_TAG, "Caffeine is inactive, updating tile accordingly");
-            tile.setIcon(Icon.createWithResource(getApplicationContext(), R.drawable.ic_coffee_off));
+            tile.setIcon(deactivatedIcon);
             tile.setState(Tile.STATE_INACTIVE);
         }
 
