@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <SwitchPreference
+        android:summaryOn="Caffeine will remain active even after you manually put your device to sleep"
+        android:summaryOff="Caffeine will deactivate as soon as you manually put your device to sleep"
+        android:title="Keep active"
+        android:defaultValue="@bool/pref_keep_active_default"
+        android:key="keep_active"/>
+</PreferenceScreen>

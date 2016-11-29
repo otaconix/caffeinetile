@@ -4,8 +4,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Icon;
 import android.os.PowerManager;
+import android.preference.PreferenceManager;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 import android.util.Log;
@@ -20,16 +22,15 @@ public class CaffeineTileService extends TileService {
 
     @Override
     public void onCreate() {
-        Context applicationContext = getApplicationContext();
-        wakeLock = applicationContext.getSystemService(PowerManager.class).newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, applicationContext.getPackageName());
+        wakeLock = getSystemService(PowerManager.class).newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, getPackageName());
         wakeLock.setReferenceCounted(false);
         screenOffReceiver.init();
         loadIcons();
     }
 
     private void loadIcons() {
-        activatedIcon = Icon.createWithResource(getApplicationContext(), R.drawable.ic_coffee_on);
-        deactivatedIcon = Icon.createWithResource(getApplicationContext(), R.drawable.ic_coffee_off);
+        activatedIcon = Icon.createWithResource(this, R.drawable.ic_coffee_on);
+        deactivatedIcon = Icon.createWithResource(this, R.drawable.ic_coffee_off);
     }
 
     @Override
@@ -97,7 +98,9 @@ public class CaffeineTileService extends TileService {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (Intent.ACTION_SCREEN_OFF.equals(action)) {
-                if (wakeLock.isHeld()) {
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(CaffeineTileService.this);
+                boolean keepActive = sharedPreferences.getBoolean("keep_active", getResources().getBoolean(R.bool.pref_keep_active_default));
+                if (wakeLock.isHeld() && !keepActive) {
                     toggleActive();
                 }
             }
