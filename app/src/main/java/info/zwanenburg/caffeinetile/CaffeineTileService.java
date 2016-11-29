@@ -20,10 +20,8 @@ public class CaffeineTileService extends TileService {
 
     @Override
     public void onCreate() {
-        super.onCreate();
-        getApplicationContext().startService(new Intent(getApplicationContext(), getClass()));
-        Log.i(LOG_TAG, "TileService created");
-        wakeLock = getApplicationContext().getSystemService(PowerManager.class).newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "Caffeine");
+        Context applicationContext = getApplicationContext();
+        wakeLock = applicationContext.getSystemService(PowerManager.class).newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, applicationContext.getPackageName());
         wakeLock.setReferenceCounted(false);
         screenOffReceiver.init();
         loadIcons();
@@ -35,32 +33,34 @@ public class CaffeineTileService extends TileService {
     }
 
     @Override
+    public void onTileAdded() {
+        startService(new Intent(getApplicationContext(), getClass()));
+    }
+
+    @Override
     public void onTileRemoved() {
         wakeLock.release();
+        stopService(new Intent(getApplicationContext(), getClass()));
     }
 
     @Override
     public void onDestroy() {
-        Log.i(LOG_TAG, "TileService destroyed");
         screenOffReceiver.destroy();
     }
 
     @Override
     public void onStartListening() {
-        Log.i(LOG_TAG, "Start listening");
         tile = getQsTile();
         updateTile();
     }
 
     private void updateTile() {
-        Log.i(LOG_TAG, "Updating tile");
+        Log.d(LOG_TAG, "Updating tile");
 
         if (wakeLock.isHeld()) {
-            Log.i(LOG_TAG, "Caffeine is active, updating tile accordingly");
             tile.setIcon(activatedIcon);
             tile.setState(Tile.STATE_ACTIVE);
         } else {
-            Log.i(LOG_TAG, "Caffeine is inactive, updating tile accordingly");
             tile.setIcon(deactivatedIcon);
             tile.setState(Tile.STATE_INACTIVE);
         }
@@ -74,13 +74,11 @@ public class CaffeineTileService extends TileService {
     }
 
     private void toggleActive() {
-        Log.i(LOG_TAG, "Toggling active state");
-
         if (wakeLock.isHeld()) {
-            Log.i(LOG_TAG, "Disabling caffeine");
+            Log.d(LOG_TAG, "Disabling caffeine");
             wakeLock.release();
         } else {
-            Log.i(LOG_TAG, "Enabling caffeine");
+            Log.d(LOG_TAG, "Enabling caffeine");
             wakeLock.acquire();
         }
 
