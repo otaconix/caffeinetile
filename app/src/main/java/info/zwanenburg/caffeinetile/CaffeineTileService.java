@@ -30,17 +30,13 @@ public class CaffeineTileService extends TileService {
     }
 
     @Override
-    public void onTileAdded() {
-        startService(new Intent(getApplicationContext(), WakelockService.class));
-    }
-
-    @Override
     public void onTileRemoved() {
         stopService(new Intent(getApplicationContext(), WakelockService.class));
     }
 
     @Override
     public void onStartListening() {
+        startService(new Intent(getApplicationContext(), WakelockService.class));
         tile = getQsTile();
         updateTile();
         serviceConnection = new ServiceConnection() {
