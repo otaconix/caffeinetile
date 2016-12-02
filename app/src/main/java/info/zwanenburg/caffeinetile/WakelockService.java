@@ -21,11 +21,15 @@ public class WakelockService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;
+    }
+
+    @Override
+    public void onCreate() {
         wakeLock = getSystemService(PowerManager.class).newWakeLock(PowerManager
                 .SCREEN_DIM_WAKE_LOCK, "Caffeine tile");
         wakeLock.setReferenceCounted(false);
         screenOffReceiver.init();
-        return START_STICKY;
     }
 
     @Override
