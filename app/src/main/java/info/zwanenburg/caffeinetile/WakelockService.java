@@ -18,6 +18,7 @@ public class WakelockService extends Service {
     private static final String LOG_TAG = WakelockService.class.getSimpleName();
     private PowerManager.WakeLock wakeLock;
     private ScreenOffReceiver screenOffReceiver = new ScreenOffReceiver();
+    private AllowScreenDimmingPreferenceListener allowScreenDimmingPreferenceListener;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -26,10 +27,26 @@ public class WakelockService extends Service {
 
     @Override
     public void onCreate() {
-        wakeLock = getSystemService(PowerManager.class).newWakeLock(PowerManager
-                .SCREEN_DIM_WAKE_LOCK, "Caffeine tile");
-        wakeLock.setReferenceCounted(false);
+        SharedPreferences defaultSharedPreferences = PreferenceManager
+                .getDefaultSharedPreferences(this);
+        wakeLock = createWakeLock(defaultSharedPreferences.getBoolean
+                (getString(R.string.pref_allow_dimming), getResources().getBoolean(R.bool
+                        .pref_allow_dimming_default)));
         screenOffReceiver.init();
+        allowScreenDimmingPreferenceListener = new AllowScreenDimmingPreferenceListener();
+        defaultSharedPreferences.registerOnSharedPreferenceChangeListener
+                (allowScreenDimmingPreferenceListener);
+    }
+
+    private PowerManager.WakeLock createWakeLock(boolean allowDimming) {
+        final int wakeLockType = allowDimming ? PowerManager.SCREEN_DIM_WAKE_LOCK : PowerManager
+                .SCREEN_BRIGHT_WAKE_LOCK;
+
+        PowerManager.WakeLock newWakeLock = getSystemService(PowerManager.class).newWakeLock
+                (wakeLockType, "Caffeine tile");
+        newWakeLock.setReferenceCounted(false);
+
+        return newWakeLock;
     }
 
     @Override
@@ -38,6 +55,8 @@ public class WakelockService extends Service {
             wakeLock.release();
         }
         screenOffReceiver.destroy();
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(allowScreenDimmingPreferenceListener);
     }
 
     /**
@@ -105,6 +124,26 @@ public class WakelockService extends Service {
 
         public void destroy() {
             getApplicationContext().unregisterReceiver(this);
+        }
+    }
+
+    private class AllowScreenDimmingPreferenceListener implements SharedPreferences
+            .OnSharedPreferenceChangeListener {
+
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+            if (getString(R.string.pref_allow_dimming).equals(s)) {
+                boolean allowDimming = sharedPreferences.getBoolean(s, getResources().getBoolean(
+                        R.bool.pref_allow_dimming_default));
+                PowerManager.WakeLock oldWakeLock = wakeLock;
+                wakeLock = createWakeLock(allowDimming);
+
+                if (oldWakeLock.isHeld()) {
+                    oldWakeLock.release();
+                    wakeLock.acquire();
+                }
+
+            }
         }
     }
 }

@@ -5,5 +5,11 @@
         android:summaryOff="Caffeine will deactivate as soon as you manually put your device to sleep"
         android:title="Keep active"
         android:defaultValue="@bool/pref_keep_active_default"
-        android:key="keep_active"/>
+        android:key="@string/pref_keep_active"/>
+    <SwitchPreference
+        android:title="Allow the screen to dim"
+        android:summaryOn="After a certain amount of time, your screen will dim"
+        android:summaryOff="Your screen will remain fully lit"
+        android:defaultValue="true"
+        android:key="@string/pref_allow_dimming" />
 </PreferenceScreen>
